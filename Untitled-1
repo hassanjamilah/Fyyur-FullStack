@@ -1,0 +1,22 @@
+- (void)updateUIByComparedOldStock:(StockModel *)oldStock withNewStock:(StockModel *)newStock {
+    if (oldStock.lastDonePrice.doubleValue != newStock.lastDonePrice.doubleValue
+    || oldStock.highPrice.doubleValue != newStock.highPrice.doubleValue
+    || oldStock.lowPrice.doubleValue != newStock.lowPrice.doubleValue
+    || oldStock.trade.doubleValue != newStock.trade.doubleValue) {
+        DLog(@"hassan price changed , %@ , %@ , %@  , %@ , %@" , oldStock.fChange , newStock.fChange , oldStock.stockName  , oldStock.lastDonePrice , newStock.lastDonePrice) ;
+        self->_lblLastPrice.layer.backgroundColor  = UIColor.clearColor.CGColor ;
+        [_lblLastPrice.layer removeAllAnimations]  ;
+         [self setupDataFrom:newStock];
+        [UIView animateWithDuration:0.8 animations:^{
+            self->_lblLastPrice.layer.backgroundColor = UIColor.greenColor.CGColor ;
+              self->_lblLastPrice.layer.backgroundColor = UIColor.clearColor.CGColor ;
+        }] ;
+         DLog(@"hassan price changed animation finished , %@ , %@ , %@  , %@ , %@" , oldStock.fChange , newStock.fChange , oldStock.stockName  , oldStock.lastDonePrice , newStock.lastDonePrice) ;
+       // [_lblLastPrice makeAnimateWithSupportUnchangedBy:oldStock newStock:newStock completion:^{
+          
+       // }];
+    } else {
+        DLog(@"hassan price changed and else state  , %@ , %@ , %@  , %@ , %@" , oldStock.fChange , newStock.fChange , oldStock.stockName  , oldStock.lastDonePrice , newStock.lastDonePrice) ;
+        [self setupDataFrom:newStock];
+    }
+}
