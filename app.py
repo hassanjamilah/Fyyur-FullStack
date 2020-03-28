@@ -23,20 +23,18 @@ moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app , db)
-# TODO: connect to a local postgresql database
+## TODO_done: connect to a local postgresql database
 
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
-shows = db.Table('shows' , 
-        db.Column('venue_id' ,  db.Integer , db.ForeignKey('venue.id') ,primary_key=True ) ,
-        db.Column('artist_id' , db.Integer , db.ForeignKey ('artist.id') , primary_key=True)
-)
+
+
 
 
 class Venue(db.Model):
-    __tablename__ = 'venue'    
-    id = db.Column(db.Integer, primary_key=True)
+    __tablename__ = 'venue'
+    id = db.Column(db.Integer , primary_key=True)
     name = db.Column(db.String)
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
@@ -44,11 +42,11 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
-    artiests = db.relationship('Artist' , secondary=shows , backref = db.backref('venues' , lazy = True))
+    artists = db.relationship('Shows' , backref = 'shows_venues' )
     def __repr__(self):
         return f'Venue:<id:{self.id},name:{self.name},city:{self.city},state:{self.state},address:{self.address},phone:{self.phone},image_link:{self.image_link},facebookLink:{self.facebook_link}>'
-     
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+
+    ## TODO_done: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
     __tablename__ = 'artist'
@@ -61,13 +59,23 @@ class Artist(db.Model):
     genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    venues = db.relationship('Shows' , backref='shows_artists' , lazy=True)
     def __repr__(self):
         return f'Artist:<id:{self.id},name:{self.name},city:{self.city},state:{self.state},phone:{self.phone},genres:{self.genres},image_link:{self.image_link},facebook_link:{self.facebook_link}>'
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 
-
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+class Shows(db.Model):
+    __tablename__ = 'shows'
+    id = db.Column(db.Integer , primary_key=True , autoincrement=True)
+    venues = db.Column(db.Integer , db.ForeignKey('venue.id') , primary_key=True )
+    artists = db.Column (db.Integer , db.ForeignKey('artist.id') , primary_key=True)
+    #time = db.Column(db.String)
+    artist = db.relationship('Artist' , backref='venues1') 
+    venue = db.relationship('Venue' , backref='artists1')
+    def __repr__(self):
+        return f'Show<id:{self.id},venuue:{self.venues} , artists:{self.artists},artist:{self.artist},venue={self.venue}>'
+ 
+# TODO_Done Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 db.create_all()
 #----------------------------------------------------------------------------#
 # Filters.
@@ -257,7 +265,7 @@ def create_venue_submission():
     db.session.commit()
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
  except:
-   flash('Error inserting new venue ' + sys.exc_info )
+   flash('Error inserting new venue ' + sys.exc_info() )
    db.session.rollback()
  finally:
    db.session.close()
@@ -472,7 +480,7 @@ def create_artist_submission():
       db.session.commit()
     except:
       db.session.rollback()
-      print ("Error inserting artist" + sys.exc_info)
+      print ("Error inserting artist" + sys.exc_info())
     finally:
       db.session.close()
     # on successful db insert, flash success
@@ -539,7 +547,26 @@ def create_shows():
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
   # TODO: insert form data as a new Show record in the db, instead
-
+# id = db.Column(db.Integer , primary_key=True)
+#       venues = db.Column('Venue' , db.ForeignKey('venue.id') , nullable=False)
+#       artists = db.Column('Artist' , db.ForeignKey('artist.id') , nullable=False)
+#       start_time = db.Column(db.Date , nullable = False)
+  try:
+    print (request.form['venue_id'])
+    print (request.form['artist_id'])
+    venue = Venue.query.get(request.form['venue_id'])
+    artist = Artist.query.get(request.form['artist_id'])
+    show = Shows()
+    show.venue = venue 
+    show.artist = artist
+    print (show)
+    db.session.add(show)
+    db.session.commit()
+  except:
+    print( sys.exc_info())
+    db.session.rollback()
+  finally:
+    db.session.close()
   # on successful db insert, flash success
   flash('Show was successfully listed!')
   # TODO: on unsuccessful db insert, flash an error instead.

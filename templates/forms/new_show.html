@@ -21,4 +21,17 @@
       <input type="submit" value="Create Venue" class="btn btn-primary btn-lg btn-block">
     </form>
   </div>
+  <script>
+    fetch('/shows/create' , {method:'POST'})
+    .then(function(response){
+      return response.json() ; 
+    })
+    .than(function(jsonResponse){
+      consoloe.log(jsonResponse)  ; 
+    })
+    .catch(funciton(e)){
+      cosnole.log('Error inserting show ${e}') ; 
+    }
+    
+  </script>
 {% endblock %}
