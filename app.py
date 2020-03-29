@@ -59,6 +59,15 @@ class Venue(db.Model):
             'facebook_link':self.facebook_link  , 
             'num_upcoming_shows':allShows
         }
+    @property
+    def searchSerialize(self):
+        allShows = Shows.query.filter_by(venues=self.id).count()
+        return {
+            'id':self.id , 
+            'name':self.name , 
+            'num_upcoming_shows':allShows,
+            
+        }
         
     @property
     def local(self):
@@ -142,7 +151,7 @@ def venues():
     return render_template('pages/venues.html', areas=data);
           
     
-  # TODO: replace with real venues data.
+  # TOTO_Done: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
   # data=[{
   #   "city": "San Francisco",
@@ -173,15 +182,27 @@ def search_venues():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
-  response={
-    "count": 1,
-    "data": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }
-  return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
+  # response={
+  #   "count": 1,
+  #   "data": [{
+  #     "id": 2,
+  #     "name": "The Dueling Pianos Bar",
+  #     "num_upcoming_shows": 0,
+  #   }]
+  # }
+    data = Venue.query.filter(Venue.name.ilike('%V%'))
+    #searchResult = [] 
+    searhcVenues = [] 
+    
+    
+    for d in data:
+        searhcVenues.append(d.searchSerialize)
+    searchResult={"count":data.count() , 
+                        "data":searhcVenues ,                          
+                         }
+    print ("😇😇😇😇😇😇😇😇😇😇😇")
+    print (searchResult)
+    return render_template('pages/search_venues.html', results=searchResult, search_term=request.form.get('search_term', ''))
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
