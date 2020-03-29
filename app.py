@@ -251,7 +251,7 @@ def search_venues():
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
   # shows the venue page with the given venue_id
-  # TODO: replace with real venue data from the venues table, using venue_id
+  # TOTO_Done: replace with real venue data from the venues table, using venue_id
   # data1={
   #   "id": 1,
   #   "name": "The Musical Hop",
@@ -330,7 +330,7 @@ def show_venue(venue_id):
   #   "upcoming_shows_count": 1,
   # }
   # data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
-  venue = Venue.query.get(1)
+  venue = Venue.query.get(venue_id)
   data = venue.serializeAlData
   print ("🍦🍦🍦🍦🍦🍦🍦🍦🍦🍦🍦")
   print (data)
@@ -348,7 +348,7 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  # TODO: insert form data as a new Venue record in the db, instead
+  # TOTO_Done: insert form data as a new Venue record in the db, instead
  # name = db.Column(db.String)
   #  city = db.Column(db.String(120))
    # state = db.Column(db.String(120))
@@ -357,7 +357,7 @@ def create_venue_submission():
     #image_link = db.Column(db.String(500))
     #facebook_link = db.Column(db.String(120))
     # venue = Venue(name=request.form.get('name'))
-  # TODO: modify data to be the data object returned from db insertion
+  # Toto_Done: modify data to be the data object returned from db insertion
  try:
     venue = Venue(name=request.form['name'], 
                   city=request.form['city'],
@@ -381,16 +381,22 @@ def create_venue_submission():
   
   # on successful db xinsert, flash success
  
-  # TODO: on unsuccessful db insert, flash an error instead.
+  # Toto_Done: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
+  # TOTO_done: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-
+  try:
+    Venue.query.filter_by(id=venue_id).delete()
+    db.session.commit()
+  except:
+    print(sys.exc_info)
+  finally:
+    db.session.close()
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
   return None
@@ -399,33 +405,56 @@ def delete_venue(venue_id):
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
-  # TODO: replace with real data returned from querying the database
-  data=[{
-    "id": 4,
-    "name": "Guns N Petals",
-  }, {
-    "id": 5,
-    "name": "Matt Quevedo",
-  }, {
-    "id": 6,
-    "name": "The Wild Sax Band",
-  }]
-  return render_template('pages/artists.html', artists=data)
+  # TOTO_Done: replace with real data returned from querying the database
+  artists = Artist.query.all()
+  result = [] 
+  for artist in artists:
+       result.append({
+         "id":artist.id ,
+         "name":artist.name ,  
+         
+       }) 
+  # data=[{
+  #   "id": 4,
+  #   "name": "Guns N Petals",
+  # }, {
+  #   "id": 5,
+  #   "name": "Matt Quevedo",
+  # }, {
+  #   "id": 6,
+  #   "name": "The Wild Sax Band",
+  # }]
+  return render_template('pages/artists.html', artists=result )
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
+  # TOTO_Done: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
-  response={
-    "count": 1,
-    "data": [{
-      "id": 4,
-      "name": "Guns N Petals",
-      "num_upcoming_shows": 0,
-    }]
+  searchStr = search_term=request.form.get('search_term', '')
+  artists = Artist.query.filter(Artist.name.ilike("%{}%".format(searchStr))).all()
+  allArtistsResult = [] 
+  for artist in artists:
+        shows = Shows.query.filter_by(artists=artist.id).filter(Shows.start_time > datetime.now()).all()
+        artistJson = {
+          "id":artist.id , 
+          "name":artist.name , 
+          "num_upcoming_shows":len(shows)
+        }
+        allArtistsResult.append(artistJson)
+  result = {
+    "count":len (artists) , 
+    "data":allArtistsResult
   }
-  return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
+  # response={
+  #   "count": 1,
+  #   "data": [{
+  #     "id": 4,
+  #     "name": "Guns N Petals",
+  #     "num_upcoming_shows": 0,
+  #   }]
+  #}
+  return render_template('pages/search_artists.html', results=result, search_term=request.form.get('search_term', ''))
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
