@@ -5,7 +5,7 @@
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for 
+from flask import Flask, render_template, request, Response, flash, redirect, url_for ,jsonify
 from flask_migrate import Migrate
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
@@ -23,7 +23,7 @@ moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app , db)
-## TODO_done: connect to a local postgresql database
+## TOTO_done: connect to a local postgresql database
 
 #----------------------------------------------------------------------------#
 # Models.
@@ -45,8 +45,29 @@ class Venue(db.Model):
     artists = db.relationship('Shows' , backref = 'shows_venues' )
     def __repr__(self):
         return f'Venue:<id:{self.id},name:{self.name},city:{self.city},state:{self.state},address:{self.address},phone:{self.phone},image_link:{self.image_link},facebookLink:{self.facebook_link}>'
+    @property
+    def serialize(self):
+        allShows = Shows.query.filter_by(venues=self.id).count()
+        return {
+            'id':self.id , 
+            'name':self.name,
+            'city':self.city,
+            'state':self.state,
+            'address':self.address,
+            'phone':self.phone , 
+            'image_link':self.image_link , 
+            'facebook_link':self.facebook_link  , 
+            'num_upcoming_shows':allShows
+        }
+        
+    @property
+    def local(self):
+        return {
+            'city':self.city , 
+            'state':self.state,
+        }
 
-    ## TODO_done: implement any missing fields, as a database migration using Flask-Migrate
+    ## TOTO_done: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
     __tablename__ = 'artist'
@@ -69,13 +90,13 @@ class Shows(db.Model):
     id = db.Column(db.Integer , primary_key=True , autoincrement=True)
     venues = db.Column(db.Integer , db.ForeignKey('venue.id') , primary_key=True )
     artists = db.Column (db.Integer , db.ForeignKey('artist.id') , primary_key=True)
-    #time = db.Column(db.String)
+    start_time = db.Column(db.DateTime)
     artist = db.relationship('Artist' , backref='venues1') 
     venue = db.relationship('Venue' , backref='artists1')
     def __repr__(self):
         return f'Show<id:{self.id},venuue:{self.venues} , artists:{self.artists},artist:{self.artist},venue={self.venue}>'
  
-# TODO_Done Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+# TOTO_Done Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 db.create_all()
 #----------------------------------------------------------------------------#
 # Filters.
@@ -105,30 +126,47 @@ def index():
 
 @app.route('/venues')
 def venues():
+    
+    allLocs = Venue.query.distinct(Venue.city , Venue.state).all()
+    data = []
+    for loc in allLocs:
+         data.append(loc.local)
+    for d in data:
+        d["venues"] = []
+        allVens = Venue.query.filter_by(city=d['city'],state=d['state']).all()
+        for v in allVens:
+            #print(v)
+            d["venues"].append(v.serialize)
+        print(data)
+        print("############## New Item ###############")
+    return render_template('pages/venues.html', areas=data);
+          
+    
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
-  return render_template('pages/venues.html', areas=data);
+  # data=[{
+  #   "city": "San Francisco",
+  #   "state": "CA",
+  #   "venues": [{
+  #     "id": 1,
+  #     "name": "The Musical Hop",
+  #     "num_upcoming_shows": 0,
+  #   }, {
+  #     "id": 3,
+  #     "name": "Park Square Live Music & Coffee",
+  #     "num_upcoming_shows": 1,
+  #   }]
+  # }, {
+  #   "city": "New York",
+  #   "state": "NY",
+  #   "venues": [{
+  #     "id": 2,
+  #     "name": "The Dueling Pianos Bar",
+  #     "num_upcoming_shows": 0,
+  #   }]
+  # }]
+  
+
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
@@ -546,30 +584,27 @@ def create_shows():
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
-  # TODO: insert form data as a new Show record in the db, instead
-# id = db.Column(db.Integer , primary_key=True)
-#       venues = db.Column('Venue' , db.ForeignKey('venue.id') , nullable=False)
-#       artists = db.Column('Artist' , db.ForeignKey('artist.id') , nullable=False)
-#       start_time = db.Column(db.Date , nullable = False)
+  # TOTO_Done: insert form data as a new Show record in the db, instead
   try:
     print (request.form['venue_id'])
     print (request.form['artist_id'])
     venue = Venue.query.get(request.form['venue_id'])
     artist = Artist.query.get(request.form['artist_id'])
-    show = Shows()
+    show = Shows(start_time=request.form['start_time'])
     show.venue = venue 
     show.artist = artist
     print (show)
     db.session.add(show)
     db.session.commit()
+    flash('Show was successfully listed!')
   except:
     print( sys.exc_info())
     db.session.rollback()
   finally:
     db.session.close()
   # on successful db insert, flash success
-  flash('Show was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
+  
+  # TOTO_Done: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Show could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')

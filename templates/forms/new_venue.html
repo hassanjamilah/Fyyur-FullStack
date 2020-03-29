@@ -43,10 +43,9 @@
       document.getElementById('form').onsubmit = function(e){
          
           form = document.getElementById('form')  ; 
-          console.log(form.name) ; 
-          alert (document.getElementById('name').value) ; 
+        
           fetch('/venues/create' , {
-              method:'POST' , 
+              method:'POST'  
          
           })
           .then(function(response){
