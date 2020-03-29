@@ -407,14 +407,6 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
   # TOTO_Done: insert form data as a new Venue record in the db, instead
- # name = db.Column(db.String)
-  #  city = db.Column(db.String(120))
-   # state = db.Column(db.String(120))
-    #address = db.Column(db.String(120))
-    #phone = db.Column(db.String(120))
-    #image_link = db.Column(db.String(500))
-    #facebook_link = db.Column(db.String(120))
-    # venue = Venue(name=request.form.get('name'))
   # Toto_Done: modify data to be the data object returned from db insertion
  try:
     venue = Venue(name=request.form['name'], 
@@ -603,6 +595,14 @@ def show_artist(artist_id):
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
   form = ArtistForm()
+  artist = Artist.query.get(artist_id)
+  form.name = artist.name 
+  form.genres = artist.genres 
+  form.city = artist.city
+  form.state = artist.artist
+  form.phone = artist.phone
+  form.image_link = artist.image_link
+  
   artist={
     "id": 4,
     "name": "Guns N Petals",
@@ -616,14 +616,28 @@ def edit_artist(artist_id):
     "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
     "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
   }
-  # TODO: populate form with fields from artist with ID <artist_id>
+  # TOTO_Done: populate form with fields from artist with ID <artist_id>
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-  # TODO: take values from the form submitted, and update existing
+  # TOTO: take values from the form submitted, and update existing
   # artist record with ID <artist_id> using the new attributes
-
+  artist = Artist.query.get(artist_id)   
+  artist.name=request.form['name']
+  artist.city = request.form['city']
+  artist.state = request.form['state'] 
+  artist.phone = request.form['phone'] 
+  artist.genres = request.form.getlist('genres') 
+  artist.image_link = request.form.getlist('genres')  
+  artist.facebook_link = request.form['facebook_link']
+  try:
+    db.session.commit()
+  except:
+    print (sys.exec_prefix)
+  finally:
+    db.session.close()
+    
   return redirect(url_for('show_artist', artist_id=artist_id))
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
@@ -643,13 +657,36 @@ def edit_venue(venue_id):
     "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
     "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
   }
-  # TODO: populate form with values from venue with ID <venue_id>
+  # TOTO_done: populate form with values from venue with ID <venue_id>
+  venue = Venue.query.get(venue_id)
+  form.name = venue.name
+  form.genres = venue.genres
+  form.address = venue.address
+  form.city = venue.city
+  form.state = venue.state
+  form.phone = venue.phone
+  form.facebook_link = venue.facebook_link
+  form.image_link = venue.image_link
   return render_template('forms/edit_venue.html', form=form, venue=venue)
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
-  # TODO: take values from the form submitted, and update existing
+  # TOTO_Done: take values from the form submitted, and update existing
   # venue record with ID <venue_id> using the new attributes
+  venue = Venue.query.get(venue_id)
+  venue.name=request.form['name'] 
+  venue.city=request.form['city']
+  venue.state=request.form['state']
+  venue.address=request.form['address']
+  venue.phone=request.form['phone']
+  venue.image_link= request.form.getlist('genres')
+  venue.facebook_link=request.form['facebook_link']
+  try:
+    db.session.commit() 
+  except:
+    print(sys.exc_info)
+  finally:
+    db.session.close()
   return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
@@ -663,8 +700,8 @@ def create_artist_form():
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
   # called upon submitting the new artist listing form
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertio
+  # TOTO_Done: insert form data as a new Venue record in the db, instead
+  # TOTO_Done: modify data to be the data object returned from db insertio
     try:
       artist = Artist(
       name=request.form['name'],
@@ -681,11 +718,12 @@ def create_artist_submission():
     except:
       db.session.rollback()
       print ("Error inserting artist" + sys.exc_info())
+      flash("Error inserting record")
     finally:
       db.session.close()
     # on successful db insert, flash success
     flash('Artist ' + request.form['name'] + ' was successfully listed!')
-    # TODO: on unsuccessful db insert, flash an error instead.
+    # TOTO: on unsuccessful db insert, flash an error instead.
     # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
     # 
     return render_template('pages/home.html')
@@ -697,45 +735,57 @@ def create_artist_submission():
 @app.route('/shows')
 def shows():
   # displays list of shows at /shows
-  # TODO: replace with real venues data.
+  # TOTO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "venue_id": 1,
-    "venue_name": "The Musical Hop",
-    "artist_id": 4,
-    "artist_name": "Guns N Petals",
-    "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-    "start_time": "2019-05-21T21:30:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 5,
-    "artist_name": "Matt Quevedo",
-    "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
-    "start_time": "2019-06-15T23:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-01T20:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-08T20:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-15T20:00:00.000Z"
-  }]
-  return render_template('pages/shows.html', shows=data)
+  shows = Shows.query.all()
+  allShows = [] 
+  for show in shows:
+        showJson = {
+              "venue_id": show.venue.id,
+              "venue_name": show.venue.name,
+              "artist_id": show.artist.id,
+              "artist_name": show.artist.name,
+              "artist_image_link": show.artist.image_link,
+              "start_time": show.start_time
+        }
+        allShows.append(showJson)
+  # data=[{
+  #   "venue_id": 1,
+  #   "venue_name": "The Musical Hop",
+  #   "artist_id": 4,
+  #   "artist_name": "Guns N Petals",
+  #   "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
+  #   "start_time": "2019-05-21T21:30:00.000Z"
+  # }, {
+  #   "venue_id": 3,
+  #   "venue_name": "Park Square Live Music & Coffee",
+  #   "artist_id": 5,
+  #   "artist_name": "Matt Quevedo",
+  #   "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
+  #   "start_time": "2019-06-15T23:00:00.000Z"
+  # }, {
+  #   "venue_id": 3,
+  #   "venue_name": "Park Square Live Music & Coffee",
+  #   "artist_id": 6,
+  #   "artist_name": "The Wild Sax Band",
+  #   "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
+  #   "start_time": "2035-04-01T20:00:00.000Z"
+  # }, {
+  #   "venue_id": 3,
+  #   "venue_name": "Park Square Live Music & Coffee",
+  #   "artist_id": 6,
+  #   "artist_name": "The Wild Sax Band",
+  #   "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
+  #   "start_time": "2035-04-08T20:00:00.000Z"
+  # }, {
+  #   "venue_id": 3,
+  #   "venue_name": "Park Square Live Music & Coffee",
+  #   "artist_id": 6,
+  #   "artist_name": "The Wild Sax Band",
+  #   "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
+  #   "start_time": "2035-04-15T20:00:00.000Z"
+  # }]
+  return render_template('pages/shows.html', shows=allShows)
 
 @app.route('/shows/create')
 def create_shows():
