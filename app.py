@@ -42,12 +42,20 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    genres = db.Column(db.String(1000))
+    website_link = db.Column(db.String(500))
+    is_seeking_talent=db.Column(db.Boolean)
+    seeking_talent_desck = db.Column(db.String(1000))
+    
     artists = db.relationship('Shows' , backref = 'shows_venues' )
+    
     def __repr__(self):
-        return f'Venue:<id:{self.id},name:{self.name},city:{self.city},state:{self.state},address:{self.address},phone:{self.phone},image_link:{self.image_link},facebookLink:{self.facebook_link}>'
+        return f'Venue:<id:{self.id},name:{self.name},city:{self.city},state:{self.state},address:{self.address},phone:{self.phone},image_link:{self.image_link},facebookLink:{self.facebook_link},genres:{self.genres},Website_link:{self.website_link},is_seeking_talent:{self.is_seeking_talent}>'
     @property
     def serialize(self):
         allShows = Shows.query.filter_by(venues=self.id).count()
+        boolVal = False
+         
         return {
             'id':self.id , 
             'name':self.name,
@@ -57,7 +65,11 @@ class Venue(db.Model):
             'phone':self.phone , 
             'image_link':self.image_link , 
             'facebook_link':self.facebook_link  , 
-            'num_upcoming_shows':allShows
+            'num_upcoming_shows':allShows , 
+            'genres':self.genres , 
+            'website_link':self.website_link , 
+            'is_seeking_talent':boolVal , 
+            'seeking_desc':self.seeking_talent_desck 
         }
     @property
     def searchSerialize(self):
@@ -409,20 +421,30 @@ def create_venue_submission():
   # TOTO_Done: insert form data as a new Venue record in the db, instead
   # Toto_Done: modify data to be the data object returned from db insertion
  try:
+    isSeeking = request.form['seeking_talent']
+    isSeekingBoolean = False 
+    if isSeeking == 'y':
+          isSeekingBoolean = True
     venue = Venue(name=request.form['name'], 
                   city=request.form['city'],
                   state=request.form['state'],
                   address=request.form['address'],
                   phone=request.form['phone'],
-                  image_link= request.form.getlist('genres'),
-                  facebook_link=request.form['facebook_link']
+                  genres= request.form.getlist('genres'),
+                  image_link = request.form['image_link'] , 
+                  facebook_link=request.form['facebook_link'] , 
+                  website_link = request.form['website_link'] , 
+                  is_seeking_talent = isSeekingBoolean , 
+                  seeking_talent_desck = request.form['seeking_description']
+                  
+                  
                   )
     print(venue)
     db.session.add(venue)
     db.session.commit()
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
  except:
-   flash('Error inserting new venue ' + sys.exc_info() )
+   flash( sys.exc_info() )
    db.session.rollback()
  finally:
    db.session.close()
@@ -643,31 +665,42 @@ def edit_artist_submission(artist_id):
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
   form = VenueForm()
-  venue={
-    "id": 1,
-    "name": "The Musical Hop",
-    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
-    "address": "1015 Folsom Street",
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "123-123-1234",
-    "website": "https://www.themusicalhop.com",
-    "facebook_link": "https://www.facebook.com/TheMusicalHop",
-    "seeking_talent": True,
-    "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-    "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
-  }
+  print('⛱⛱⛱⛱⛱⛱⛱')
+  print('hassan venue edit')
+  # venue={
+  #   "id": 1,
+  #   "name": "The Musical Hop",
+  #   "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
+  #   "address": "1015 Folsom Street",
+  #   "city": "San Francisco",
+  #   "state": "CA",
+  #   "phone": "123-123-1234",
+  #   "website": "https://www.themusicalhop.com",
+  #   "facebook_link": "https://www.facebook.com/TheMusicalHop",
+  #   "seeking_talent": True,
+  #   "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
+  #   "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
+  # }
   # TOTO_done: populate form with values from venue with ID <venue_id>
   venue = Venue.query.get(venue_id)
-  form.name = venue.name
-  form.genres = venue.genres
-  form.address = venue.address
-  form.city = venue.city
-  form.state = venue.state
-  form.phone = venue.phone
-  form.facebook_link = venue.facebook_link
-  form.image_link = venue.image_link
+  print('🚥🚥🚥🚥🚥🚥🚥🚥🚥🚥')
+  if venue.is_seeking_talent == None or venue.is_seeking_talent == 'f':
+        venue.is_seeking_talent = False
+  else:
+        venue.is_seeking_talent = True
+  print(venue)
+  form.genres.data=venue.genres 
+  # form.name = venue.name
+  # form.genres = venue.genres
+  # form.address = venue.address
+  # form.city = venue.city
+  # form.state = venue.state
+  # form.phone = venue.phone
+  # form.facebook_link = venue.facebook_link
+  # form.image_link = venue.image_link
+  #venue = Venue(id = 10 , name='Hassan')
   return render_template('forms/edit_venue.html', form=form, venue=venue)
+  
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
@@ -681,6 +714,7 @@ def edit_venue_submission(venue_id):
   venue.phone=request.form['phone']
   venue.image_link= request.form.getlist('genres')
   venue.facebook_link=request.form['facebook_link']
+  
   try:
     db.session.commit() 
   except:

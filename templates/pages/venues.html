@@ -9,11 +9,57 @@
 			<a href="/venues/{{ venue.id }}">
 				<i class="fas fa-music"></i>
 				<div class="item">
-					<h5>{{ venue.name }}</h5>
+					<h5>{{ venue.name }}
+					
+					</h5>
+					
 				</div>
 			</a>
+			<button data-id="{{venue.id}}" class="delete_venue" >Delete</button>
+			<button data-id="{{venue.id}}" class="edit_venue" >Edit</button>
 		</li>
 		{% endfor %}
 	</ul>
 {% endfor %}
+<script>
+	let delete_buttons = document.querySelectorAll('.delete_venue')
+	let edit_buttons = document.querySelectorAll('.edit_venue')
+	for (let i = 0 ; i<delete_buttons.length ; i++){
+		const button = delete_buttons[i] ; 
+		console.log('hassan') ; 
+		button.onclick = function(e){
+			id = e.target.dataset['id'] ; 
+			console.log(id) ; 
+			fetch('/venues/' + id , {
+				method:['DELETE']
+			})
+			.then(function(){
+				console.log(id + " deleted successfully.") ; 
+			})
+			.catch(function(e){
+				console.log(e) ; 
+			})
+		}
+	}
+
+	for (let i = 0 ; i<edit_buttons.length ; i++){
+		let button = edit_buttons[i] ; 
+		button.onclick=function(e){
+			id = e.target.dataset['id'] ; 
+			console.log(id)
+			s = "/venues/" + id + "/edit"  ;
+			console.log(s) ;  
+			 
+			fetch("/venues/" + id + "/edit" , {
+					method:'GET'
+			})
+			.then(function(){
+				window.location.href=s ; 
+			})
+			.catch(function(e){
+				cosnole.log(e)
+			}) 
+		}
+	}
+</script>
 {% endblock %}

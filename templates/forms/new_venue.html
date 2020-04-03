@@ -31,8 +31,23 @@
         <label for="genres">Genres</label>
         <small>Ctrl+Click to select multiple</small>
         {{ form.genres(class_ = 'form-control', placeholder='Genres, separated by commas', id=form.state, autofocus = true) }}
-      </div>          <label for="genres">Facebook Link</label>
+      </div>
+          <label for="genres">Facebook Link</label>
           {{ form.facebook_link(class_ = 'form-control', placeholder='http://', id=form.state, autofocus = true) }}
+          <label>Image Link</label>
+          {{ form.image_link(class_ = 'form-control' , placeholder = 'http://',id=form.state , autofocus=true) }}
+          <div></div>
+          <label>Website Link</label>
+          <div></div>
+          {{ form.website_link(class_ = 'form-control' , placeholder = 'http://',id=form.state , autofocus=true) }}
+          
+        </div>
+        <div>
+          <label>Is Seeking Talent</label>
+          {{form.seeking_talent(class_ = 'form-control' , autofocus = True)}}
+          <label>Seeking description</label>
+          {{ form.seeking_description (class_ = 'form-control' ,id=form.state , autofocus=true) }}
+          <div></div>
         </div>
       <input type="submit" value="Create Venue" class="btn btn-primary btn-lg btn-block">
     </form>
