@@ -628,6 +628,7 @@ def show_artist(artist_id):
 def edit_artist(artist_id):
   form = ArtistForm()
   artist = Artist.query.get(artist_id)
+  form.genres.data = artist.genres
   #form.name = artist1.name 
   # form.genres = artist.genres 
   # form.city = artist.city
