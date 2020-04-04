@@ -10,7 +10,32 @@
 				<h5>{{ artist.name }}</h5>
 			</div>
 		</a>
+		
+		<button class="edit_show" data-id="{{artist.id}}">Edit</button>
 	</li>
 	{% endfor %}
 </ul>
+
+<script>
+	
+	const allEdit = document.querySelectorAll('.edit_show')
+
+	for (i = 0 ; i<allEdit.length  ; i++){
+		const button = allEdit[i] ; 
+		button.onclick=function(e){
+			id = e.target.dataset['id'] ; 
+			s = '/artists/' + id + '/edit'
+			console.log(s)
+			fetch('/artists/" + id + /edit',{
+				method:'GET'
+			})
+			.then(function(){
+				window.location.href = s  ; 
+			})
+			.catch(function(e){
+				console.log(e)  ; 
+			})
+		}
+	}
+</script>
 {% endblock %}

@@ -55,7 +55,7 @@ class Venue(db.Model):
     def serialize(self):
         allShows = Shows.query.filter_by(venues=self.id).count()
         boolVal = False
-         
+          
         return {
             'id':self.id , 
             'name':self.name,
@@ -68,7 +68,7 @@ class Venue(db.Model):
             'num_upcoming_shows':allShows , 
             'genres':self.genres , 
             'website_link':self.website_link , 
-            'is_seeking_talent':boolVal , 
+            'is_seeking_talent':self.is_seeking_talent , 
             'seeking_desc':self.seeking_talent_desck 
         }
     @property
@@ -148,12 +148,20 @@ class Artist(db.Model):
     genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    website_link = db.Column(db.String(120))
+    is_seeking_venue = db.Column(db.Boolean)
+    seeking_desc= db.Column(db.String(120))
     venues = db.relationship('Shows' , backref='shows_artists' , lazy=True)
     def __repr__(self):
-        return f'Artist:<id:{self.id},name:{self.name},city:{self.city},state:{self.state},phone:{self.phone},genres:{self.genres},image_link:{self.image_link},facebook_link:{self.facebook_link}>'
+        return f'Artist:<id:{self.id},name:{self.name},city:{self.city},state:{self.state},phone:{self.phone},genres:{self.genres},image_link:{self.image_link},facebook_link:{self.facebook_link},website_link:{self.website_link} , is_seeking_Venue:{self.is_seeking_venue} , seeking_desc:{self.seeking_desc}>'
 
     @property 
     def getArtistJson(self):
+      if self.is_seeking_venue == None or self.is_seeking_venue == 'f':
+          self.is_seeking_venue = False
+      else:
+          self.is_seeking_venue = True    
+          
       return {
         "id":self.id , 
         "name":self.name , 
@@ -162,8 +170,10 @@ class Artist(db.Model):
         "phnoe":self.phone , 
         "genres":self.genres , 
         "image_link":self.image_link , 
-        "facebook_link":self.facebook_link
-        
+        "facebook_link":self.facebook_link , 
+        "website_link":self.website_link  , 
+        "is_seeking_venue":self.is_seeking_venue , 
+        "seeking_desc":self.seeking_desc
       }
     
     
@@ -618,26 +628,26 @@ def show_artist(artist_id):
 def edit_artist(artist_id):
   form = ArtistForm()
   artist = Artist.query.get(artist_id)
-  form.name = artist.name 
-  form.genres = artist.genres 
-  form.city = artist.city
-  form.state = artist.artist
-  form.phone = artist.phone
-  form.image_link = artist.image_link
+  #form.name = artist1.name 
+  # form.genres = artist.genres 
+  # form.city = artist.city
+  # form.state = artist.state
+  # form.phone = artist.phone
+  # form.image_link = artist.image_link
   
-  artist={
-    "id": 4,
-    "name": "Guns N Petals",
-    "genres": ["Rock n Roll"],
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "326-123-5000",
-    "website": "https://www.gunsnpetalsband.com",
-    "facebook_link": "https://www.facebook.com/GunsNPetals",
-    "seeking_venue": True,
-    "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
-    "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
-  }
+  # artist={
+  #   "id": 4,
+  #   "name": "Guns N Petals",
+  #   "genres": ["Rock n Roll"],
+  #   "city": "San Francisco",
+  #   "state": "CA",
+  #   "phone": "326-123-5000",
+  #   "website": "https://www.gunsnpetalsband.com",
+  #   "facebook_link": "https://www.facebook.com/GunsNPetals",
+  #   "seeking_venue": True,
+  #   "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
+  #   "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
+  # }
   # TOTO_Done: populate form with fields from artist with ID <artist_id>
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
@@ -760,6 +770,10 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   # TOTO_Done: insert form data as a new Venue record in the db, instead
   # TOTO_Done: modify data to be the data object returned from db insertio
+    boolVal = False 
+    x = request.form['is_seeking_venue'] 
+    if x == 'y':
+          boolVal=True
     try:
       artist = Artist(
       name=request.form['name'],
@@ -767,15 +781,19 @@ def create_artist_submission():
       state = request.form['state'] , 
       phone = request.form['phone'] , 
       genres = request.form.getlist('genres') , 
-      image_link = request.form.getlist('genres')  , 
-      facebook_link = request.form['facebook_link']
+      image_link = request.form['image_link']  , 
+      facebook_link = request.form['facebook_link'] , 
+      website_link  = request.form['website_link'] , 
+      is_seeking_venue = boolVal , 
+      seeking_desc = request.form['seeking_desc']
       ) ; 
       print(artist)
       db.session.add(artist)
       db.session.commit()
     except:
       db.session.rollback()
-      print ("Error inserting artist" + sys.exc_info())
+      print('✋🏻✋🏻✋🏻✋🏻✋🏻✋🏻✋🏻✋🏻')
+      print ( sys.exc_info())
       flash("Error inserting record")
     finally:
       db.session.close()
