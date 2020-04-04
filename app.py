@@ -50,7 +50,7 @@ class Venue(db.Model):
     artists = db.relationship('Shows' , backref = 'shows_venues' )
     
     def __repr__(self):
-        return f'Venue:<id:{self.id},name:{self.name},city:{self.city},state:{self.state},address:{self.address},phone:{self.phone},image_link:{self.image_link},facebookLink:{self.facebook_link},genres:{self.genres},Website_link:{self.website_link},is_seeking_talent:{self.is_seeking_talent}>'
+        return f'Venue:<id:{self.id},name:{self.name},city:{self.city},state:{self.state},address:{self.address},phone:{self.phone},image_link:{self.image_link},facebookLink:{self.facebook_link},genres:{self.genres},Website_link:{self.website_link},is_seeking_talent:{self.is_seeking_talent},seeking_desc={self.seeking_talent_desck}>'
     @property
     def serialize(self):
         allShows = Shows.query.filter_by(venues=self.id).count()
@@ -466,12 +466,12 @@ def delete_venue(venue_id):
     Venue.query.filter_by(id=venue_id).delete()
     db.session.commit()
   except:
-    print(sys.exc_info)
+    print('🛹✋🏻✋🏻✋🏻✋🏻✋🏻✋🏻✋🏻✋🏻✋🏻✋🏻')
+    print(sys.exc_info())
+    db.session.rollback()
   finally:
     db.session.close()
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-  # clicking that button delete it from the db then redirect the user to the homepage
-  return None
+  return jsonify({ 'success': True })
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -706,15 +706,39 @@ def edit_venue(venue_id):
 def edit_venue_submission(venue_id):
   # TOTO_Done: take values from the form submitted, and update existing
   # venue record with ID <venue_id> using the new attributes
+    #   isSeeking = request.form['seeking_talent']
+    # isSeekingBoolean = False 
+    # if isSeeking == 'y':
+    #       isSeekingBoolean = True
+    # venue = Venue(name=request.form['name'], 
+    #               city=request.form['city'],
+    #               state=request.form['state'],
+    #               address=request.form['address'],
+    #               phone=request.form['phone'],
+    #               genres= request.form.getlist('genres'),
+    #               image_link = request.form['image_link'] , 
+    #               facebook_link=request.form['facebook_link'] , 
+    #               website_link = request.form['website_link'] , 
+    #               is_seeking_talent = isSeekingBoolean , 
+    #               seeking_talent_desck = request.form['seeking_description']
   venue = Venue.query.get(venue_id)
+  isSeeking = request.form['seeking_talent']
+  isSeekingBoolean = False 
+  if isSeeking == 'y':
+     isSeekingBoolean = True
   venue.name=request.form['name'] 
   venue.city=request.form['city']
   venue.state=request.form['state']
   venue.address=request.form['address']
   venue.phone=request.form['phone']
-  venue.image_link= request.form.getlist('genres')
+  venue.image_link= request.form['image_link']
   venue.facebook_link=request.form['facebook_link']
-  
+  venue.genres = request.form.getlist('genres')
+  venue.website_link = request.form['website_link']
+  venue.is_seeking_talent=isSeekingBoolean
+  venue.seeking_talent_desck = request.form['seeking_description']
+  print('🎡🎡🎡🎡🎡🎡🎡🎡🎡')
+  print(venue)
   try:
     db.session.commit() 
   except:

@@ -35,7 +35,7 @@
       <div class="form-group">
         <label for="genres">Genres</label>
         <small>Ctrl+Click to select multiple</small>
-        {{ form.genres(class_ = 'form-control',data=['Blues','Alternative'] ,  placeholder='Genres, separated by commas', id=form.state, autofocus = true) }}
+        {{ form.genres(class_ = 'form-control' ,  placeholder='Genres, separated by commas', id=form.state, autofocus = true) }}
       </div>
       <div class="form-group">
           <label for="genres">Facebook Link</label>
@@ -50,11 +50,9 @@
         </div>
         <div>
           <label>Is Seeking Talent</label>
-          {% print('🏚🏚🏚🏚🏚🏚🏚🏚')%}
-          {% print(venue.is_seeking_talent)%}
           {{form.seeking_talent(class_ = 'form-control' ,checked=venue.is_seeking_talent , autofocus = True)}}
           <label>Seeking description</label>
-          {{ form.seeking_description (class_ = 'form-control', value=venue.seeking_description ,id=form.state , autofocus=true) }}
+          {{ form.seeking_description (class_ = 'form-control', value=venue.seeking_talent_desck ,id=form.state , autofocus=true) }}
           <div>🏨{{venue.is_seeking_talent}}</div>
         </div>
       <input type="submit" value="Edit Venue" class="btn btn-primary btn-lg btn-block">
