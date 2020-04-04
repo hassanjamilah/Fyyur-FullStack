@@ -31,8 +31,18 @@
       <div class="form-group">
           <label for="genres">Facebook Link</label>
           {{ form.facebook_link(class_ = 'form-control', placeholder='http://', id=form.state, autofocus = true) }}
-        </div>
-      <input type="submit" value="Create Venue" class="btn btn-primary btn-lg btn-block">
+          <label for="genres">Website Link</label>
+          {{ form.website_link(class_ = 'form-control', placeholder='http://', id=form.state, autofocus = true) }}        </div>
+          <label for="genres">Image_link</label>
+          {{form.image_link(class_ = 'form-control' , placeholder='http://' , id=form.state , autofocus=True)}}
+       <div>
+          <label>Is Seeking Venue</label>
+          {{form.is_seeking_venue(class_ = 'form-control' , autofocus = True)}}
+          <label>Seeking description</label>
+          {{ form.seeking_desc (class_ = 'form-control' ,id=form.state , autofocus=true) }}
+          <div></div>
+        </div>   
+      <input type="submit" value="Create Venue" class="btn btn-primary btn-lg btn-block"> 
     </form>
   </div>
 <script>
